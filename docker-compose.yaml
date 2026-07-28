@@ -1,0 +1,62 @@
+version: '3'
+services:
+  authentik:
+    command: server
+    environment:
+      - SERVICE_URL_AUTHENTIK_9000
+      - 'AUTHENTIK_POSTGRESQL__HOST=${SERVICE_NETBIRD_IP}'
+      - 'AUTHENTIK_POSTGRESQL__NAME=${SERVICE_POSTGRES_DB}'
+      - 'AUTHENTIK_POSTGRESQL__PASSWORD=${SERVICE_PASSWORD_POSTGRES}'
+      - 'AUTHENTIK_POSTGRESQL__USER=${SERVICE_USER_POSTGRES}'
+      - 'AUTHENTIK_SECRET_KEY=${SERVICE_REALBASE64_64_AUTHENTIK}'
+      - 'AUTHENTIK_LISTEN__HTTP=0.0.0.0:9000'
+      - 'AUTHENTIK_STORAGE__BACKEND=s3'
+      - 'AUTHENTIK_STORAGE__S3__ACCESS_KEY=${SERVICE_S3_ACCESS_KEY}'
+      - 'AUTHENTIK_STORAGE__S3__SECRET_KEY=${SERVICE_S3_SECRET_KEY}'
+      - 'AUTHENTIK_STORAGE__S3__BUCKET_NAME=${SERVICE_S3_BUCKET_NAME}'
+      - 'AUTHENTIK_EMAIL__HOST=${SERVICE_SMTP_HOST}'
+      - 'AUTHENTIK_EMAIL__PORT=${SERVICE_SMTP_PORT}'
+      - 'AUTHENTIK_EMAIL__USERNAME=${SERVICE_SMTP_USER}'
+      - 'AUTHENTIK_EMAIL__PASSWORD=${SERVICE_SMTP_PASS}'
+      - 'AUTHENTIK_EMAIL__USE_TLS=true'
+      - 'AUTHENTIK_EMAIL__FROM=${SERVICE_SMTP_FROM}'
+      - 'AUTHENTIK_ERROR_REPORTING__ENABLED=false'
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
+    ports:
+      - '9000:9000'
+      - '9443:9443'
+    shm_size: 512mb
+    volumes:
+      - ./data:/data
+      - ./custom-templates:/templates
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'curl -f http://localhost:9000'
+  authentik-worker:
+    command: worker
+    environment:
+      - 'AUTHENTIK_POSTGRESQL__HOST=${SERVICE_NETBIRD_IP}'
+      - 'AUTHENTIK_POSTGRESQL__NAME=${SERVICE_POSTGRES_DB}'
+      - 'AUTHENTIK_POSTGRESQL__PASSWORD=${SERVICE_PASSWORD_POSTGRES}'
+      - 'AUTHENTIK_POSTGRESQL__USER=${SERVICE_USER_POSTGRES}'
+      - 'AUTHENTIK_SECRET_KEY=${SERVICE_REALBASE64_64_AUTHENTIK}'
+      - 'AUTHENTIK_STORAGE__BACKEND=s3'
+      - 'AUTHENTIK_STORAGE__S3__ACCESS_KEY=${SERVICE_S3_ACCESS_KEY}'
+      - 'AUTHENTIK_STORAGE__S3__SECRET_KEY=${SERVICE_S3_SECRET_KEY}'
+      - 'AUTHENTIK_STORAGE__S3__BUCKET_NAME=${SERVICE_S3_BUCKET_NAME}'
+      - 'AUTHENTIK_EMAIL__HOST=${SERVICE_SMTP_HOST}'
+      - 'AUTHENTIK_EMAIL__PORT=${SERVICE_SMTP_PORT}'
+      - 'AUTHENTIK_EMAIL__USERNAME=${SERVICE_SMTP_USER}'
+      - 'AUTHENTIK_EMAIL__PASSWORD=${SERVICE_SMTP_PASS}'
+      - 'AUTHENTIK_EMAIL__USE_TLS=true'
+      - 'AUTHENTIK_EMAIL__FROM=${SERVICE_SMTP_FROM}'
+      - 'AUTHENTIK_ERROR_REPORTING__ENABLED=false'
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
+    shm_size: 512mb
+    user: root
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./data:/data
+    - ./certs:/certs
+    - ./custom-templates:/templates
