@@ -65,5 +65,4 @@ services:
       - ./certs:/certs
       - ./custom-templates:/templates
     labels:
-      - coolify.type=service
-      - coolify.service.subType=application
+      - traefik.enable=false
