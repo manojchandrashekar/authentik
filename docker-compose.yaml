@@ -59,11 +59,11 @@ services:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
     shm_size: 512mb
     user: root
-    ports:
-      - '9001:9000'
-      - '9444:9443'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/data
       - ./certs:/certs
       - ./custom-templates:/templates
+    labels:
+      - coolify.type=service
+      - coolify.service.subType=application
